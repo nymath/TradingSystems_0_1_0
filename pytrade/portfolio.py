@@ -9,8 +9,8 @@ except ImportError:
 import numpy as np
 import pandas as pd
 
-from event import FillEvent, OrderEvent
-from performance import create_sharpe_ratio, create_drawdowns
+from .event import FillEvent, OrderEvent
+from .performance import create_sharpe_ratio, create_drawdowns
 
 class Portfolio(object):
     """
@@ -35,7 +35,7 @@ class Portfolio(object):
         
         initial_capital: The starting capital.
         """
-        self.bars = basrs
+        self.bars = bars
         self.events = events
         self.symbol_list = self.bars.symbol_list
         self.start_date = start_date
@@ -53,7 +53,7 @@ class Portfolio(object):
         to determine when the time index will begin.
         """
         d = dict( (k,v) for k,v in [(s,0) for s in self.symbol_list])
-        d['datetime'] = self.strat_date
+        d['datetime'] = self.start_date
         return [d]
     
     def construct_all_holdings(self):
@@ -62,7 +62,7 @@ class Portfolio(object):
         to determine when the time index will begin.
         """
         d = dict( (k,v)  for k,v in [(s,0) for s in self.symbol_list])
-        d['datetime'] = self.strat_date
+        d['datetime'] = self.start_date
         d['cash'] = self.initial_capital
         d['commission'] = 0.0
         d['total'] = self.initial_capital
@@ -144,9 +144,9 @@ class Portfolio(object):
         """
         # check whether the fill is a buy orsell
         fill_dir = 0
-        if fill_direction == 'BUY':
+        if fill.direction == 'BUY':
             fill_dir = 1
-        if fill_direction == "SELL":
+        if fill.direction == "SELL":
             fill_dir = -1
             
         # Update holdings list with new quantities
@@ -221,7 +221,7 @@ class Portfolio(object):
         returns = self.equity_curve['returns']
         pnl = self.equity_curve['equity_curve']
         
-        sharpe_ratio = create_sharpe_ratio(returns,periods=252*60*6.5)
+        sharpe_ratio = create_sharpe_ratio(returns,periods=252) #TODO
         drawdown, max_dd, dd_duration = create_drawdowns(pnl)
         self.equity_curve['drawdown'] = drawdown
         

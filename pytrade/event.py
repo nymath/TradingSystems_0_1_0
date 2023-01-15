@@ -87,7 +87,7 @@ class FillEvent(Event):
     Encapsulates(压缩) the notion of a FIlled Order, as returned from a brokerage.
     Stores the quantity of an insturment actually filled and at wat price. In addition, stores the commision of the trade from the brokerage.
     """
-    def __init__(self, timeindex, symbol, exchange, quantity, direction, fill_cost, commision=None):
+    def __init__(self, timeindex, symbol, exchange, quantity, direction, fill_cost, commission=None):
         """
         Parameters:
         timeindex: The bar-resolution when the order was filled.
@@ -96,22 +96,22 @@ class FillEvent(Event):
         quantity: 数量
         direction: 
         fill_cost:
-        commision:
+        commission:
         """
         
-    self.type = 'FILL'
-    self.timeindex = timeindex
-    self.symbol = symbol
-    self.exchange = exchange
-    self.quantity = quantity
-    self.direction = direction
+        self.type = 'FILL'
+        self.timeindex = timeindex
+        self.symbol = symbol
+        self.exchange = exchange
+        self.quantity = quantity
+        self.direction = direction
     
-    if commision is None:
-        self.commision = self.calculate_ib_commision()
-    else:
-        self.commision = commision
-        
-    def calculate_ib_commision(self):
+        if commission is None:
+            self.commission = self.calculate_ib_commission()
+        else:
+            self.commission = commission
+            
+    def calculate_ib_commission(self):
         full_cost = 1.3
         if self.quantity <= 500:
             full_cost = max(1.3, 0.013 * self.quantity)

@@ -1,5 +1,5 @@
 import datetime
-import ppring
+
 
 try:
     import Queue as queue
@@ -14,7 +14,7 @@ class Backtest(object):
     """
     
     def __init__(self, csv_dir, symbol_list, initial_capital,
-                 heartbeat, start_date, date_handler, execution_handler,
+                 heartbeat, start_date, end_date, data_handler, execution_handler,
                  portfolio, strategy):
         """
         Initialises the backtest.
@@ -35,6 +35,7 @@ class Backtest(object):
         self.initial_capital = initial_capital
         self.heartbeat = heartbeat
         self.start_date = start_date
+        self.end_date = end_date
         
         self.data_handler_cls = data_handler
         self.strategy_cls = strategy
@@ -56,10 +57,10 @@ class Backtest(object):
         Generates the trading instance objects from their class types
         """
         print("Creating DataHandler, Strategy, Portfolio and ExecutionHandler")
-        self.data_handler = self.data_handler_cls(self.events, self.csv_dir, self.symbol_list)
-        self.strategy = self.strategy_cls(self.data_handler, self.events)
+        self.data_handler = self.data_handler_cls(self.events, self.csv_dir, self.symbol_list, self.start_date, self.end_date)
         self.portfolio = self.portfolio_cls(self.data_handler, self.events, self.start_date, self.initial_capital)
         self.execution_handler = self.execution_handler_cls(self.events) 
+        self.strategy = self.strategy_cls(self.data_handler, self.portfolio, self.events)
         
     def _run_backtest(self):
         
@@ -76,7 +77,7 @@ class Backtest(object):
             # 注意这个while循环，表示一个bar内的操作。当loop1只执行一个MarketEvent, 然后放入SignalEvent, loop2就会开始这行这些SignalEvent，然后...
             while True:
                 try:
-                    event = self.events.get(False) # MarketEvent
+                    event = self.events.get(False) 
                 except queue.Empty:
                     break
                 else:
@@ -95,7 +96,7 @@ class Backtest(object):
 
                         elif event.type == 'FILL':
                             self.fills += 1
-                            self.portfolio.update_fill(event)
+                            self.portfolio.update_fill(event) # 更新了持仓但市值没变，因为市值是估计的期初的价值。
                             
             time.sleep(self.heartbeat) # 休息一下
             
@@ -110,7 +111,7 @@ class Backtest(object):
         stats = self.portfolio.output_summary_stats()
         print("Creating equity curve ...")
         print(self.portfolio.equity_curve.tail(10))
-        pprint.pprint(stats)
+        print(stats)
         print("Signals: %s" % self.signals) 
         print("Orders: %s" % self.orders) 
         print("Fills: %s" % self.fills)

@@ -7,7 +7,7 @@ import os, os.path
 import numpy as np
 import pandas as pd
 
-from event import MarketEvent
+from .event import MarketEvent
 
 # DataHandler是一个abc, 从而不能够被实例化，但他的子类可以被实例化。 使用__metaclass__ 让python知道这是个abc
 # 此外我们也使用@abcstractmethod decorator, 让python知道这个函数会被override
@@ -24,7 +24,6 @@ class DataHandler(object):
     """
     __metaclass__ = ABCMeta
 
-
     @abstractmethod
     def get_latest_bar(self, symbol):
         """
@@ -33,11 +32,11 @@ class DataHandler(object):
         raise NotImplementedError("Should implement get_lateset_bar()")
     
     @abstractmethod
-    def get_lateset_bars(self, symbol, N=1):
+    def get_latest_bars(self, symbol, N=1):
         """
         Returns the last N bars updated.
         """
-        raise NotImplementedError("Should implement get_lateset_bars()")
+        raise NotImplementedError("Should implement get_latest_bars()")
     
     @abstractmethod
     def get_latest_bar_datetime(self, symbol):
@@ -47,7 +46,7 @@ class DataHandler(object):
         raise NotImplementedError("Should implement get_latest_datetime()")
     
     @abstractmethod
-    def get_lateset_bar_value(self, symbol, val_type):
+    def get_latest_bar_value(self, symbol, val_type):
         """
         返回OHLCOI from the last bar.
         """
@@ -75,19 +74,22 @@ class HistoricCSVDataHandler(DataHandler):
     """
     读csv文件
     """
-    def __init__(self, events, csv_dir, symbol_list):
+    def __init__(self, events, csv_dir, symbol_list, start_date, end_date):
         """
-        这里是MarketEvent类
+        events: 事件队列
         """
         self.events = events
         self.csv_dir = csv_dir
         self.symbol_list = symbol_list
+        self.start_date = start_date
+        self.end_date = end_date
+        
         
         self.symbol_data = {} # 存放所有
         self.latest_symbol_data = {}
         self.continue_backtest = True
         
-        self.__open__convert_csv_files()
+        self._open_convert_csv_files()
         
         
     def _open_convert_csv_files(self):
@@ -107,10 +109,10 @@ class HistoricCSVDataHandler(DataHandler):
                 ]
             )
             self.symbol_data[s].sort_index(inplace=True)
-        
+            self.symbol_data[s] = self.symbol_data[s][self.start_date:self.end_date]
             # Combine the index to pad forward values, 换句话说, 我们后边需要取合并数据集，所以index选择untion
             if comb_index is None:
-                comb_index = self.symbol_data.index
+                comb_index = self.symbol_data[s].index
             else:
                 comb_index.union(self.symbol_data[s].index)
             # 把最新的数据设置为空
@@ -121,8 +123,8 @@ class HistoricCSVDataHandler(DataHandler):
             self.symbol_data[s] = self.symbol_data[s].reindex(
                 index = comb_index, method='pad'
             )
-            self.symbol_data[s]["returns"] = self.symbol_data[s].dropna() # 这个dropna感觉没什么用, 返回的结果和你想象的一样
-            # 然后按照rows, 把一个股票的行情数据转化为一个generator
+            self.symbol_data[s]["returns"] = self.symbol_data[s]["adj_close" ].pct_change().dropna() # 这个dropna感觉没什么用, 返回的结果和你想象的一样
+            # 然后按照rows, 把一个股票的行情数据转化为一个generator, 这个generator每次生成一个tuple, 这个tuple的第一个元素是时间
             self.symbol_data[s] = self.symbol_data[s].iterrows()
             
     def _get_new_bar(self, symbol):
@@ -182,13 +184,13 @@ class HistoricCSVDataHandler(DataHandler):
         else:
             return getattr(bars_list[-1][1], val_type) # 因为我们知道了bars_list是一个tuple, 第一个位置是一个series
         
-    def get_latest_bars_values(self, symbol, val_type, N=1):
+    def get_latest_bars_values(self, symbol, val_type, N=1) -> np.array:
         """
         Returns the last N bar values from the 
         latest_symbol list, or N-k if less available
         """
         try:
-            bars_list = self.get_lateset_bars(symbol, N)
+            bars_list = self.get_latest_bars(symbol, N)
         except KeyError:
             print("That symbol is not available in the historical data set.")
             raise
