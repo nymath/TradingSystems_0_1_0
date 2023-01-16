@@ -1,5 +1,7 @@
 # 事件驱动的交易系统
 
+[![Version](https://img.shields.io/badge/Version-0.1.0-green.svg)]([{linkUrl}](https://github.com/nymath/TradingSystems_0_1_0))
+
 等后边有时间了再写一下完整的介绍。
 
 ## 文件介绍
@@ -45,8 +47,8 @@ My Project is a simple application that allows users to do X, Y, and Z.
 
 ## Installation
 
-[![GitHub version](https://badge.fury.io/gh/user%2Frepo.svg)](https://github.com/nymath/TradingSystems_0_1_0)
+<!-- [![GitHub version](https://badge.fury.io/nymath/TradingSystems_0_1_0.svg)](https://github.com/nymath/TradingSystems_0_1_0) -->
 
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<!-- [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) -->
 
 
