@@ -38,3 +38,15 @@
 
 1. 时区
 2. 交易费用
+
+# My Project
+
+My Project is a simple application that allows users to do X, Y, and Z.
+
+## Installation
+
+[![GitHub version](https://badge.fury.io/gh/user%2Frepo.svg)](https://github.com/nymath/TradingSystems_0_1_0)
+
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+
