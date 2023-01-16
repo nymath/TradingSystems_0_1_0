@@ -11,7 +11,7 @@ from ib.opt import ibConnection, message
 from pytrade.event import FillEvent, OrderEvent
 from pytrade.execution import ExecutionHandler
 
-class IBexecutionHandler(ExecutionHandler()):
+class IBexecutionHandler(ExecutionHandler):
     """
     Handles order execution via the Interactive Brokers API, 
     for use against accounts when trading live directyly.

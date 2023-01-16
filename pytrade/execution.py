@@ -55,7 +55,6 @@ class SimulatedExecutionHandler(ExecutionHandler):
         event: Contains an Event object with order information.
         """
         if event.type == "ORDER":
-            fill_event = FillEvent(datetime.datetime.utcnow(), event.symbol, 'ARCA',
+            fill_event = FillEvent(datetime.datetime.utcnow(), event.symbol, 'ARCA', #FIXME: 修改时间
                                    event.quantity, event.direction, None)
             self.events.put(fill_event)
-            

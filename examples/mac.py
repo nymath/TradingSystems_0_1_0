@@ -20,7 +20,7 @@ from pytrade.portfolio import Portfolio
 # 短均线下穿长均线时, 清空手里的头寸，直到下一个信号出现.
 
 ## 策略总结
-## 在20010928发生了一次极大的回撤, 苹果公司的股价发生了, 可以试试改变长短期均线长度, 试试能否避免这次回撤。
+## 在20010928, 苹果公司的股价发生了发生了一次极大的回撤, 可以尝试改变长短期均线长度, 能否避免这次回撤。
 
 class MovingAverageCrossStrategy(Strategy):
     """
@@ -34,7 +34,8 @@ class MovingAverageCrossStrategy(Strategy):
         Parameters:
         ----------------------------------
         bars: DataHandler object
-        events: The event Queue object.
+        account: Portfolio object
+        events: The event Queue object
         short_window = The short moving average lookback
         long_window = The long moving average lookback
         """
@@ -69,12 +70,12 @@ class MovingAverageCrossStrategy(Strategy):
             for s in self.symbol_list:
                 bars = self.bars.get_latest_bars_values(s, 'adj_close', N = self.long_window) # array
                 bar_date = self.bars.get_latest_bar_datetime(s)
-                if  bars is not None: #TODO 修改判定方式
+                if  bars is not None: #FIXME: 修改判定方式
                     short_sma = np.mean(bars[-self.short_window:])
                     long_sma = np.mean(bars[-self.long_window:])
                     
                     symbol = s
-                    cur_date = datetime.utcnow()
+                    cur_date = datetime.utcnow() #FIXME: 注意时间
                     sig_dir = ""
                     # 只有当条件满足时才会产生信号, 
                     if short_sma > long_sma and self.bought[symbol] == "OUT":
@@ -85,19 +86,15 @@ class MovingAverageCrossStrategy(Strategy):
                         n = int(0.8 * cash / price / 100)
                         signal = SignalEvent(1, symbol, cur_date, sig_dir, 1.0) # 一手
                         for i in range(n):
-                            self.events.put(signal)
+                            self.events.put(signal) # 连续下单
                         self.bought[s] = 'LONG'
-                        
+                    # 短均线下穿长均线且处于long状态, 那么退出市场
                     elif short_sma < long_sma and self.bought[symbol] == "LONG":
                         print("SHORT: %s" % bar_date)
                         sig_dir = "EXIT"
                         signal = SignalEvent(1, symbol, cur_date, sig_dir, 1.0)
                         self.events.put(signal) 
                         self.bought[s] = "OUT"
-
-def order_target():
-    pass
-
 
 
 if __name__ == "__main__":
@@ -114,7 +111,9 @@ if __name__ == "__main__":
     symbol_list = ['AAPL']
     initial_capital = 100000.0
     heartbeat = 0.0
-    
+    start_date = datetime(1998, 1, 2)
+    end_date = datetime(2008, 12, 31)
+
     backtest = Backtest(csv_dir, symbol_list, initial_capital, heartbeat, start_date, end_date,
                         HistoricCSVDataHandler, 
                         SimulatedExecutionHandler,

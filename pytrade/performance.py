@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-def create_sharpe_ratio(returns, periods=252): # TODO
+def create_sharpe_ratio(returns, periods=252): # FIXME: 修改时间频率
     """
     Create the Sharpe ratio for the strategy, based on a benchmark of zero.
     Parameters:

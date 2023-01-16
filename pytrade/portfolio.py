@@ -201,8 +201,8 @@ class Portfolio(object):
         """
         if event.type == 'SIGNAL':
             order_event = self.generate_naive_order(event)
-            self.events.put(order_event)
-    
+            self.events.put(order_event)  #MARK: 放入信号事件 
+
     def create_equity_curve_dataframe(self):
         """
         Creates a Pandas DataFrame from all_holdings list of dictionaries.
@@ -219,9 +219,9 @@ class Portfolio(object):
         """
         total_return = self.equity_curve['equity_curve'][-1]
         returns = self.equity_curve['returns']
-        pnl = self.equity_curve['equity_curve']
+        pnl = self.equity_curve['equity_curve'] 
         
-        sharpe_ratio = create_sharpe_ratio(returns,periods=252) #TODO
+        sharpe_ratio = create_sharpe_ratio(returns,periods=252) #FIXME: 修改时间频率
         drawdown, max_dd, dd_duration = create_drawdowns(pnl)
         self.equity_curve['drawdown'] = drawdown
         

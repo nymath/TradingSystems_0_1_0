@@ -68,8 +68,8 @@ class DataHandler(object):
         raise NotImplementedError("Should implement update_bars()")
     
     
-## 由于没有固定的数据来源, 所以我还是采用csv, 
-
+## HistoricCSVDataHandler
+## 股票数据可以用这个class来处理, 支持任何频率.
 class HistoricCSVDataHandler(DataHandler):
     """
     读csv文件
@@ -212,3 +212,5 @@ class HistoricCSVDataHandler(DataHandler):
                     self.latest_symbol_data[s].append(bar)
         self.events.put(MarketEvent())
 
+##
+#TODO: 期货, 期权数据

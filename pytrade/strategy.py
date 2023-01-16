@@ -26,4 +26,8 @@ class Strategy(object):
         """
         raise NotImplementedError("Should implement calculate_signals()")
     
+    @abstractmethod
+    def order_target(self):
+        raise NotImplementedError("Should implement order_target()")
+
     

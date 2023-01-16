@@ -1,6 +1,5 @@
 import datetime
 
-
 try:
     import Queue as queue
 except ImportError:
@@ -26,9 +25,9 @@ class Backtest(object):
         initial_capital:
         heartbeat: 
         start_date : 
-        data_handler : Class
+        data_handler : DataHandler Class
         execution_handler: Class
-        portfolio: Class
+        portfolio: Portfolio Class
         """
         self.csv_dir = csv_dir
         self.symbol_list = symbol_list
@@ -47,7 +46,7 @@ class Backtest(object):
         self.signals = 0
         self.orders = 0
         self.fills = 0
-        self.num_strats = 1
+        self.num_strats = 1 #TODO: 修改策略数量
         
         self._generate_trading_instances()
         
@@ -70,7 +69,9 @@ class Backtest(object):
             print(i)
             # Update the market bars
             if self.data_handler.continue_backtest == True:
-                self.data_handler.update_bars() # 放入一个MarketEvent
+                self.data_handler.update_bars() # MARK: 更新bar, 放入MarketEvent, 需要值得注意的是, 在取完数据后, 整体还需要运行一次,才会出现continue_backtest
+                # == False, 因此会出现两次最后一天，但这个没有问题，因为第一个最后一天计算的是期初的价值, 第二个最后一天计算的是期末的价值(因为通过fillEvent更新的数据)
+                # 需要在第二次运行时才会体现.
             else:
                 break
             # Handle the events
@@ -83,20 +84,20 @@ class Backtest(object):
                 else:
                     if event is not None:
                         if event.type == 'MARKET':
-                            self.strategy.calculate_signals(event) # 这会在Queue中放入SignalEvent
-                            self.portfolio.update_timeindex(event) # Queue没有影响
+                            self.strategy.calculate_signals(event) #MARK: 放入SignalEvent
+                            self.portfolio.update_timeindex(event) # append当前的holdings
                         
                         elif event.type == 'SIGNAL':
                             self.signals += 1
-                            self.portfolio.update_signal(event) # 在Queue中放入OrderEvent
+                            self.portfolio.update_signal(event) #MARK: 放入OrderEvent
                             
                         elif event.type == 'ORDER':
-                            self.orders += 1
-                            self.execution_handler.execute_order(event) # 在Queue中放入
+                            self.orders += 1 
+                            self.execution_handler.execute_order(event) #MARK 放入FillEvent
 
                         elif event.type == 'FILL':
                             self.fills += 1
-                            self.portfolio.update_fill(event) # 更新了持仓但市值没变，因为市值是估计的期初的价值。
+                            self.portfolio.update_fill(event) # 因为市值是估计的期末的价值。
                             
             time.sleep(self.heartbeat) # 休息一下
             
@@ -107,9 +108,10 @@ class Backtest(object):
         self.portfolio.create_equity_curve_dataframe()
         
         print("Creating summary stats ... ")
-        
         stats = self.portfolio.output_summary_stats()
         print("Creating equity curve ...")
+        print(self.data_handler.latest_symbol_data['AAPL'][-1:])
+        print(self.portfolio.equity_curve.head(10))
         print(self.portfolio.equity_curve.tail(10))
         print(stats)
         print("Signals: %s" % self.signals) 
