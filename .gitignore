@@ -1,0 +1,15 @@
+# 忽略掉所有文件
+*
+# 取消忽略所有带有后缀名的文件
+!*.*
+# 取消忽略所有目录
+!*/
+!VERSION
+zsh.ipynb
+.pdf
+# .gitignore
+.ipynb_checkpoints
+*.dSYM
+.DS_Store
+.vscode
+*(zlib).pdf
